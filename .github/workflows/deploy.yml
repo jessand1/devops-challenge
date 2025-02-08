@@ -11,46 +11,49 @@ jobs:
 
     steps:
       # 1️⃣ Clonar el código
-      - name: 📥 Clonar el código
+      - name: Clonar el código
         uses: actions/checkout@v3
 
-      # 2️⃣ Limpiar caché de Docker y Terraform (Opcional, pero útil para evitar conflictos)
-      - name: 🔄 Limpiar caché de Docker y Terraform
+      # 2️⃣ Limpiar caché de Docker y Terraform
+      - name: Limpiar caché de Docker y Terraform
         run: |
           docker logout ghcr.io || true
           docker system prune -af || true
           rm -rf .terraform .terraform.lock.hcl || true
 
       # 3️⃣ Autenticarse en GitHub Container Registry (GHCR)
-      - name: 🔑 Iniciar sesión en GHCR
+      - name: Iniciar sesión en GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
         run: |
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+          echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
 
       # 4️⃣ Construir la imagen Docker
-      - name: 🐳 Construir la imagen Docker
+      - name: Construir la imagen Docker
         run: docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/devops-challenge:latest .
 
       # 5️⃣ Subir la imagen a GHCR
-      - name: 📤 Subir la imagen a GHCR
+      - name: Subir la imagen a GHCR
         run: docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/devops-challenge:latest
 
       # 6️⃣ Instalar Terraform CLI
-      - name: 🔨 Instalar Terraform
+      - name: Instalar Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.5 # Asegúrate de usar una versión estable
+          terraform_version: 1.5.5
 
       # 7️⃣ Inicializar Terraform
-      - name: ⚡ Inicializar Terraform
+      - name: Inicializar Terraform
         run: terraform init
         working-directory: ./terraform
 
       # 8️⃣ Aplicar Terraform (Desplegar infraestructura)
-      - name: 📜 Ejecutar Terraform Apply
+      - name: Aplicar Terraform
         run: terraform apply -auto-approve
         working-directory: ./terraform
 
       # 9️⃣ Verificar despliegue
-      - name: 🔍 Verificar despliegue
+      - name: Verificar despliegue
         run: |
           curl -s http://localhost:8080/hello || exit 1
