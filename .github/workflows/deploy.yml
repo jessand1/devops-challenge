@@ -14,13 +14,12 @@ jobs:
       - name: 📥 Clonar el código
         uses: actions/checkout@v3
 
-      # 2️⃣ Limpiar cache de Docker y Terraform
-      - name: 🔄 Limpiar cache de Docker y Terraform
+      # 2️⃣ Limpiar caché de Docker y Terraform (Opcional, pero útil para evitar conflictos)
+      - name: 🔄 Limpiar caché de Docker y Terraform
         run: |
           docker logout ghcr.io || true
           docker system prune -af || true
-          rm -rf .terraform || true
-          rm -rf .terraform.lock.hcl || true
+          rm -rf .terraform .terraform.lock.hcl || true
 
       # 3️⃣ Autenticarse en GitHub Container Registry (GHCR)
       - name: 🔑 Iniciar sesión en GHCR
@@ -35,20 +34,23 @@ jobs:
       - name: 📤 Subir la imagen a GHCR
         run: docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/devops-challenge:latest
 
-      # 6️⃣ Instalar Terraform
+      # 6️⃣ Instalar Terraform CLI
       - name: 🔨 Instalar Terraform
         uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.5 # Asegúrate de usar una versión estable
 
       # 7️⃣ Inicializar Terraform
       - name: ⚡ Inicializar Terraform
         run: terraform init
         working-directory: ./terraform
 
-      # 8️⃣ Aplicar Terraform
+      # 8️⃣ Aplicar Terraform (Desplegar infraestructura)
       - name: 📜 Ejecutar Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./terraform
 
       # 9️⃣ Verificar despliegue
       - name: 🔍 Verificar despliegue
-        run: curl -s http://localhost:8080/hello || exit 1
+        run: |
+          curl -s http://localhost:8080/hello || exit 1
