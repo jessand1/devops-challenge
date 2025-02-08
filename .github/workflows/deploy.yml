@@ -10,28 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clonar el código
+      - name: Clonar el código
         uses: actions/checkout@v3
 
-      - name: 🐳 Construir la imagen Docker
+      - name:  Construir la imagen Docker
         run: docker build -t devops-challenge .
 
-      - name: 📤 Subir imagen a Docker Hub
+      - name:  Subir imagen a Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker tag devops-challenge ${{ secrets.DOCKER_USERNAME }}/devops-challenge:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/devops-challenge:latest
 
-      - name: 🔨 Instalar Terraform
+      - name:  Instalar Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: ⚡ Inicializar Terraform
+      - name:  Inicializar Terraform
         run: terraform init
         working-directory: ./terraform
 
-      - name: 📜 Ejecutar Terraform Apply
+      - name:  Ejecutar Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./terraform
 
-      - name: 🔍 Verificar despliegue
+      - name:  Verificar despliegue
         run: curl -s http://localhost:8080/hello || exit 1
