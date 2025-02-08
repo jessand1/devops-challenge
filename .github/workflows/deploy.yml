@@ -13,29 +13,12 @@ jobs:
       - name: Clonar el código
         uses: actions/checkout@v3
 
-      - name: Cerrar sesión en GHCR (opcional)
-        run: docker logout ghcr.io || true
-
-      - name: Iniciar sesión en GitHub Container Registry (GHCR)
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
-
-      - name: Construir la imagen Docker
-        run: docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/devops-challenge:latest .
-
-      - name: Subir imagen a GHCR
+      - name: Limpiar cache de Docker y GHCR
         run: |
-          docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/devops-challenge:latest
+          docker logout ghcr.io || true
+          docker system prune -af || true
 
-      - name: Instalar Terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Inicializar Terraform
-        run: terraform init
-        working-directory: ./terraform
-
-      - name: Ejecutar Terraform Apply
-        run: terraform apply -auto-approve
-        working-directory: ./terraform
-
-      - name: Verificar despliegue
-        run: curl -s http://localhost:8080/hello || exit 1
+      - name: Limpiar cache de Terraform
+        run: |
+          rm -rf .terraform || true
+          rm -rf .terraform.lock.hcl || true
