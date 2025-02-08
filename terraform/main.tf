@@ -24,14 +24,14 @@ resource "docker_container" "nginx" {
   }
 }
 
-# 📌 NUEVO: Imagen y contenedor del microservicio usando el REGISTRO LOCAL
+# 📌 Intento con image_id solo si la imagen fue previamente obtenida por Terraform
 resource "docker_image" "microservice" {
   name = "localhost:5000/devops-challenge:latest"
 }
 
 resource "docker_container" "microservice" {
   name  = "microservice-container"
-  image = docker_image.microservice.image_id
+  image = docker_image.microservice.name  # Intentamos usar el nombre en vez de image_id
 
   ports {
     internal = 3000
