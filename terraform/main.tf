@@ -9,6 +9,7 @@ terraform {
 
 provider "docker" {}
 
+# Imagen y contenedor de Nginx
 resource "docker_image" "nginx" {
   name = "nginx:latest"
 }
@@ -23,3 +24,17 @@ resource "docker_container" "nginx" {
   }
 }
 
+# 📌 NUEVO: Imagen y contenedor del microservicio usando el REGISTRO LOCAL
+resource "docker_image" "microservice" {
+  name = "localhost:5000/devops-challenge:latest"
+}
+
+resource "docker_container" "microservice" {
+  name  = "microservice-container"
+  image = docker_image.microservice.image_id
+
+  ports {
+    internal = 3000
+    external = 4000
+  }
+}
